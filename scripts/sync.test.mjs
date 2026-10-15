@@ -280,7 +280,7 @@ test("drops non-whitelisted front matter and requires date", () => {
   note(vault, "杂项/无日期.md", { date: null, body: "没有日期。" });
   const result = syncVault({ vault, outDir: out, dryRun: false });
   const text = readOut(out, "价值投资/kept-slug/index.md");
-  assert.match(text, /slug: kept-slug/);
+  assert.match(text, /slug: "kept-slug"/);
   assert.match(text, /date: 2026-04-05/);
   assert.match(text, /会计/);
   assert.doesNotMatch(text, /author/);
@@ -321,6 +321,6 @@ test("CLI dry-run and failing sync", () => {
 
 test("site placeholders stay untouched", () => {
   for (const file of SITE_POSTS) {
-    assert.equal(fs.readFileSync(file, "utf8"), siteBefore[file]);
+    assert.equal(fs.readFileSync(file).equals(siteBefore[file]), true);
   }
 });
