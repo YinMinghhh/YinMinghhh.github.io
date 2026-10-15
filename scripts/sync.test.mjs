@@ -6,12 +6,13 @@ import path from "node:path";
 import test from "node:test";
 import { isChineseId, syncVault, toSlug } from "./sync.mjs";
 
-const SITE_POSTS = [
-  "src/content/posts/杂项/m1-smoke.md",
-  "src/content/posts/杂项/m1-placeholder.md",
-];
+const SITE_DIR = "src/content/posts";
+const SITE_POSTS = fs
+  .readdirSync(SITE_DIR, { recursive: true })
+  .map(f => path.join(SITE_DIR, String(f)))
+  .filter(f => fs.statSync(f).isFile());
 const siteBefore = Object.fromEntries(
-  SITE_POSTS.map(file => [file, fs.readFileSync(file, "utf8")])
+  SITE_POSTS.map(file => [file, fs.readFileSync(file)])
 );
 
 function tempDir() {
