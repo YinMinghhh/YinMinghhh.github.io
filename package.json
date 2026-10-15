@@ -11,7 +11,7 @@
     "dev": "astro dev",
     "build": "node scripts/check-publish.mjs && astro check && astro build && pagefind --site dist && cp -r dist/pagefind public/",
     "preview": "astro preview",
-    "test": "node --test scripts/sync.test.mjs scripts/check-publish.test.mjs",
+    "test": "node --test scripts/sync.test.mjs scripts/check-publish.test.mjs scripts/covers.test.mjs",
     "sync": "node scripts/sync.mjs",
     "astro:sync": "astro sync",
     "astro": "astro",

@@ -2,6 +2,7 @@ import { defineCollection } from "astro:content";
 import { z } from "astro/zod";
 import { glob } from "astro/loaders";
 import config from "@/config";
+import { normalizeCovers } from "./utils/covers.mjs";
 
 export const BLOG_PATH = "src/content/posts";
 
@@ -27,6 +28,9 @@ const posts = defineCollection({
         draft: z.boolean().optional(),
         tags: z.array(z.string()).default([]),
         ogImage: image().or(z.string()).optional(),
+        cover: z
+          .union([image(), z.array(image())])
+          .optional(),
         description: z.string().default(""),
         canonicalURL: z.string().optional(),
         hideEditPost: z.boolean().optional(),
@@ -43,6 +47,7 @@ const posts = defineCollection({
       })
       .transform(data => ({
         ...data,
+        cover: normalizeCovers(data.cover, data.slug),
         pubDatetime: (data.pubDatetime ?? data.date) as Date,
         modDatetime: data.modDatetime ?? data.updated ?? null,
       })),

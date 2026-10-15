@@ -324,3 +324,78 @@ test("site placeholders stay untouched", () => {
     assert.equal(fs.readFileSync(file).equals(siteBefore[file]), true);
   }
 });
+
+function coverNote(vault, rel, coverYaml, body = "正文。") {
+  write(
+    path.join(vault, rel),
+    ["---", "publish: true", 'title: "封面"', "date: 2026-05-01", ...coverYaml, "---", "", body, ""].join("\n")
+  );
+}
+
+function coverVault() {
+  const vault = tempDir();
+  for (const name of ["价值投资", "初级会计", "随手札记"]) fs.mkdirSync(path.join(vault, name));
+  for (const n of [1, 2, 3, 4]) write(path.join(vault, `随手札记/附件/c${n}.jpg`), `cover-${n}`);
+  write(path.join(vault, "随手札记/附件/body.jpg"), "body-bytes");
+  return vault;
+}
+
+test("cover: string, array, and wiki ref are copied and rewritten like body images", () => {
+  const vault = coverVault();
+  const out = tempDir();
+  coverNote(vault, "随手札记/单张.md", ["cover: 附件/c1.jpg"]);
+  coverNote(vault, "随手札记/多张.md", ["cover:", "  - c2.jpg", '  - "[[c3.jpg]]"', "  - 附件/c1.jpg"]);
+  const result = syncVault({ vault, outDir: out });
+  assert.equal(result.errors.length, 0, JSON.stringify(result.errors));
+  const one = readOut(out, `随手札记/${toSlug("单张")}/index.md`);
+  assert.match(one, /cover:\n  - "\.\/c1\.jpg"\n/);
+  assert.equal(readOut(out, `随手札记/${toSlug("单张")}/c1.jpg`), "cover-1");
+  const many = readOut(out, `随手札记/${toSlug("多张")}/index.md`);
+  assert.match(many, /cover:\n  - "\.\/c2\.jpg"\n  - "\.\/c3\.jpg"\n  - "\.\/c1\.jpg"\n/);
+  assert.equal(readOut(out, `随手札记/${toSlug("多张")}/c3.jpg`), "cover-3");
+});
+
+test("cover: more than 3 keeps first 3 in order and warns", () => {
+  const vault = coverVault();
+  const out = tempDir();
+  coverNote(vault, "随手札记/太多.md", ["cover: [c1.jpg, c2.jpg, c3.jpg, c4.jpg]"]);
+  const result = syncVault({ vault, outDir: out });
+  assert.equal(result.errors.length, 0, JSON.stringify(result.errors));
+  const post = readOut(out, `随手札记/${toSlug("太多")}/index.md`);
+  assert.match(post, /cover:\n  - "\.\/c1\.jpg"\n  - "\.\/c2\.jpg"\n  - "\.\/c3\.jpg"\n---/);
+  assert.equal(fs.existsSync(path.join(out, "随手札记", toSlug("太多"), "c4.jpg")), false);
+  assert.ok(result.warnings.some(w => w.file === "随手札记/太多.md" && w.message.includes("4 张")));
+});
+
+test("cover: missing or empty means no cover and never falls back to body images", () => {
+  const vault = coverVault();
+  const out = tempDir();
+  coverNote(vault, "随手札记/无封面.md", [], "![](附件/body.jpg)");
+  coverNote(vault, "随手札记/空封面.md", ["cover: []"], "![](附件/body.jpg)");
+  const result = syncVault({ vault, outDir: out });
+  assert.equal(result.errors.length, 0, JSON.stringify(result.errors));
+  for (const name of ["无封面", "空封面"]) {
+    const post = readOut(out, `随手札记/${toSlug(name)}/index.md`);
+    assert.doesNotMatch(post, /^cover:/m);
+    assert.match(post, /!\[\]\(\.\/body\.jpg\)/);
+  }
+});
+
+test("cover: unresolvable ref is a sync error and the post is not exported", () => {
+  const vault = coverVault();
+  const out = tempDir();
+  coverNote(vault, "随手札记/坏封面.md", ["cover: nope.jpg"]);
+  const result = syncVault({ vault, outDir: out });
+  assert.ok(result.errors.some(e => e.file === "随手札记/坏封面.md" && e.message.includes("nope.jpg")));
+  assert.equal(fs.existsSync(path.join(out, "随手札记", toSlug("坏封面"))), false);
+});
+
+test("cover: oversized cover gets the >1MB warning", () => {
+  const vault = coverVault();
+  const out = tempDir();
+  write(path.join(vault, "随手札记/附件/big.jpg"), Buffer.alloc(1024 * 1024 + 1));
+  coverNote(vault, "随手札记/大封面.md", ["cover: big.jpg"]);
+  const result = syncVault({ vault, outDir: out });
+  assert.equal(result.errors.length, 0, JSON.stringify(result.errors));
+  assert.ok(result.warnings.some(w => w.file === "随手札记/大封面.md" && w.message.includes("1MB")));
+});

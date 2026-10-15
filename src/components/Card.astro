@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { getRelativeLocaleUrl } from "astro:i18n";
+import { Image } from "astro:assets";
 import { getPostUrl } from "@/utils/getPostPaths";
 import { getCategoryByFilePath } from "@/utils/categories";
 import { toTransitionName } from "@/utils/toTransitionName";
@@ -13,35 +14,130 @@ type Props = {
 
 const { variant: Heading = "h2", id, data, filePath } = Astro.props;
 const { title, description, slug, pubDatetime, modDatetime, timezone } = data;
+const covers = (data.cover ?? []).slice(0, 3);
 const locale = Astro.currentLocale ?? config.site.lang;
 const category = getCategoryByFilePath(filePath);
+const href = getPostUrl(id, filePath, locale, slug);
 ---
 
-<li class="my-6">
-  <a
-    href={getPostUrl(id, filePath, locale, slug)}
-    class:list={[
-      "text-accent inline-block text-lg font-medium",
-      "decoration-dashed underline-offset-4 hover:underline",
-      "focus-visible:no-underline focus-visible:underline-offset-0",
-    ]}
-  >
-    <Heading transition:name={toTransitionName(title)}>
-      {title}
-    </Heading>
-  </a>
-  <div class="my-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-    <Datetime {pubDatetime} {modDatetime} {timezone} />
-    {
-      category && (
-        <a
-          href={getRelativeLocaleUrl(locale, `categories/${category.slug}`)}
-          class="text-accent text-sm decoration-dashed underline-offset-4 hover:underline"
-        >
-          {category.name}
-        </a>
-      )
-    }
+<li class:list={["post-row my-6", covers.length > 0 && "has-cover"]}>
+  <div class="post-text min-w-0 flex-1">
+    <a
+      href={href}
+      class:list={[
+        "text-accent inline-block text-lg font-medium",
+        "decoration-dashed underline-offset-4 hover:underline",
+        "focus-visible:no-underline focus-visible:underline-offset-0",
+      ]}
+    >
+      <Heading transition:name={toTransitionName(title)}>
+        {title}
+      </Heading>
+    </a>
+    <div class="my-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+      <Datetime {pubDatetime} {modDatetime} {timezone} />
+      {
+        category && (
+          <a
+            href={getRelativeLocaleUrl(locale, `categories/${category.slug}`)}
+            class="text-accent text-sm decoration-dashed underline-offset-4 hover:underline"
+          >
+            {category.name}
+          </a>
+        )
+      }
+    </div>
+    <p>{description}</p>
   </div>
-  <p>{description}</p>
+  {
+    covers.length > 0 && (
+      <a
+        href={href}
+        class="cover-stack"
+        data-count={covers.length}
+        aria-hidden="true"
+        tabindex="-1"
+      >
+        {covers.map((cover, i) => (
+          <Image
+            src={cover}
+            alt=""
+            width={352}
+            height={198}
+            class={`cover cover-${i + 1}`}
+            loading="lazy"
+          />
+        ))}
+      </a>
+    )
+  }
 </li>
+
+<style>
+  .post-row.has-cover {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  .cover-stack {
+    position: relative;
+    flex: none;
+    width: 216px;
+    height: 136px;
+    padding-top: 18px;
+  }
+  .cover {
+    position: absolute;
+    left: 0;
+    top: 18px;
+    width: 176px;
+    height: 99px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #bdbdbd;
+    transform-origin: bottom left;
+    transition: transform 180ms ease-out;
+  }
+  .cover-1 {
+    z-index: 3;
+  }
+  .cover-2 {
+    z-index: 2;
+    outline: 2px solid #fff;
+    transform: translate(8px, -6px) rotate(4deg);
+  }
+  .cover-3 {
+    z-index: 1;
+    outline: 2px solid #fff;
+    transform: translate(14px, -11px) rotate(8deg);
+  }
+  .post-row:hover .cover-2,
+  .post-row:focus-within .cover-2 {
+    transform: translate(18px, -10px) rotate(8deg);
+  }
+  .post-row:hover .cover-3,
+  .post-row:focus-within .cover-3 {
+    transform: translate(32px, -18px) rotate(15deg);
+  }
+  .post-row:hover .cover-stack[data-count="1"] .cover-1 {
+    filter: brightness(1.02);
+  }
+  @media (max-width: 640px) {
+    .post-row.has-cover {
+      flex-direction: column-reverse;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cover {
+      transition: none;
+    }
+    .post-row:hover .cover-2,
+    .post-row:focus-within .cover-2 {
+      transform: translate(8px, -6px) rotate(4deg);
+    }
+    .post-row:hover .cover-3,
+    .post-row:focus-within .cover-3 {
+      transform: translate(14px, -11px) rotate(8deg);
+    }
+  }
+</style>

@@ -133,13 +133,26 @@ function yamlQuote(value) {
   return JSON.stringify(String(value));
 }
 
-function renderPost({ title, date, updated, description, slug, tags, body }) {
+export function normalizeCover(value) {
+  if (value == null || value === "") return [];
+  const list = Array.isArray(value) ? value : [value];
+  return list
+    .map(item => String(item ?? "").trim())
+    .filter(Boolean)
+    .map(item => item.replace(/^!?\[\[([^\]|]+)(?:\|[^\]]*)?]]$/, "$1").trim());
+}
+
+function renderPost({ title, date, updated, description, slug, tags, covers = [], body }) {
   const lines = ["---", "publish: true", `title: ${yamlQuote(title)}`, `date: ${date}`];
   if (updated) lines.push(`updated: ${updated}`);
   lines.push(`description: ${yamlQuote(description)}`, `slug: ${yamlQuote(slug)}`);
   if (tags.length) {
     lines.push("tags:");
     for (const tag of tags) lines.push(`  - ${yamlQuote(tag)}`);
+  }
+  if (covers.length) {
+    lines.push("cover:");
+    for (const cover of covers) lines.push(`  - ${yamlQuote(`./${cover}`)}`);
   }
   lines.push("---", "", body.trimEnd(), "");
   return lines.join("\n");
@@ -415,7 +428,21 @@ function transformBody(vault, notes, images, note, warnings, errors) {
     cursor = event.end;
   }
   out += body.slice(cursor);
-  return { body: out, images: imageFiles };
+  let coverRefs = normalizeCover(note.data.cover);
+  if (coverRefs.length > 3) {
+    warnings.push({
+      file: note.rel,
+      line: 1,
+      message: `cover 有 ${coverRefs.length} 张，只取前 3 张（${note.slug}）`,
+    });
+    coverRefs = coverRefs.slice(0, 3);
+  }
+  const covers = [];
+  for (const ref of coverRefs) {
+    const safe = takeImage(ref, 1);
+    if (safe && !covers.includes(safe)) covers.push(safe);
+  }
+  return { body: out, images: imageFiles, covers };
 }
 
 function loadNotes(vault) {
@@ -600,6 +627,7 @@ export function syncVault({ vault, outDir, dryRun = false }) {
           description,
           slug: note.slug,
           tags,
+          covers: transformed.covers,
           body: transformed.body,
         })
       )
