@@ -3,7 +3,7 @@ import type { CollectionEntry } from "astro:content";
 export const CATEGORIES = [
   { name: "价值投资", slug: "jiazhi-touzi" },
   { name: "初级会计", slug: "chuji-kuaiji" },
-  { name: "杂项", slug: "zaxiang" },
+  { name: "随手札记", slug: "notes" },
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];

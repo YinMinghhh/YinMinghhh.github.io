@@ -62,7 +62,7 @@ test("acceptance 5: only publish true is exported, dry-run matches writes", () =
   note(vault, "初级会计/已发布乙.md", { body: "乙的正文。" });
   note(vault, "价值投资/未发布.md", { publish: false, body: "不应出现。" });
   note(vault, "价值投资/缺省.md", { publish: "omit", body: "不应出现。" });
-  fs.mkdirSync(path.join(vault, "杂项"));
+  fs.mkdirSync(path.join(vault, "随手札记"));
 
   const dry = syncVault({ vault, outDir: out, dryRun: true });
   assert.equal(dry.errors.length, 0);
@@ -123,9 +123,9 @@ test("acceptance 6: attachments, wikilinks, and width", () => {
       "```",
     ].join("\n"),
   });
-  note(vault, "杂项/标准图.md", { body: "看图 ![](附件/1.jpg)" });
-  write(path.join(vault, "杂项/附件/1.jpg"), jpg);
-  note(vault, "杂项/远图.md", { body: "![[only-remote.png]]" });
+  note(vault, "随手札记/标准图.md", { body: "看图 ![](附件/1.jpg)" });
+  write(path.join(vault, "随手札记/附件/1.jpg"), jpg);
+  note(vault, "随手札记/远图.md", { body: "![[only-remote.png]]" });
 
   const result = syncVault({ vault, outDir: out, dryRun: false });
   assert.equal(result.errors.length, 0, JSON.stringify(result.errors, null, 2));
@@ -140,10 +140,10 @@ test("acceptance 6: attachments, wikilinks, and width", () => {
   assert.match(post, /```\n!\[\[图\.png\]\]\n```/);
   assert.equal(fs.readFileSync(path.join(out, "价值投资", toSlug("已发布笔记"), "tu.png"), "utf8"), "own-png");
   assert.equal(fs.readFileSync(path.join(out, "价值投资", toSlug("已发布笔记"), "x.png"), "utf8"), "own-png");
-  assert.equal(fs.readFileSync(path.join(out, "杂项", toSlug("标准图"), "1.jpg"), "utf8"), "jpg-bytes");
-  assert.match(readOut(out, `杂项/${toSlug("标准图")}/index.md`), /!\[\]\(\.\/1\.jpg\)/);
+  assert.equal(fs.readFileSync(path.join(out, "随手札记", toSlug("标准图"), "1.jpg"), "utf8"), "jpg-bytes");
+  assert.match(readOut(out, `随手札记/${toSlug("标准图")}/index.md`), /!\[\]\(\.\/1\.jpg\)/);
   assert.equal(
-    fs.readFileSync(path.join(out, "杂项", toSlug("远图"), "only-remote.png"), "utf8"),
+    fs.readFileSync(path.join(out, "随手札记", toSlug("远图"), "only-remote.png"), "utf8"),
     "remote-png"
   );
   assert.equal(fs.existsSync(path.join(out, "价值投资", toSlug("伪装"))), false);
@@ -162,7 +162,7 @@ test("missing image, missing note, and whole-note embed block that article", () 
   note(vault, "价值投资/已发布笔记.md", { body: "完好。" });
   note(vault, "价值投资/缺图.md", { body: "前\n![[不存在.png]]" });
   note(vault, "初级会计/嵌入.md", { body: "![[已发布笔记]]" });
-  note(vault, "杂项/缺笔记.md", { body: "[[没有这篇]]" });
+  note(vault, "随手札记/缺笔记.md", { body: "[[没有这篇]]" });
 
   const result = syncVault({ vault, outDir: out, dryRun: false });
   const missingImage = result.errors.find(item => item.message.includes("找不到图片"));
@@ -177,7 +177,7 @@ test("missing image, missing note, and whole-note embed block that article", () 
   assert.ok(missingNote);
   assert.equal(fs.existsSync(path.join(out, "价值投资", toSlug("缺图"))), false);
   assert.equal(fs.existsSync(path.join(out, "初级会计", toSlug("嵌入"))), false);
-  assert.equal(fs.existsSync(path.join(out, "杂项", toSlug("缺笔记"))), false);
+  assert.equal(fs.existsSync(path.join(out, "随手札记", toSlug("缺笔记"))), false);
   assert.match(readOut(out, `价值投资/${toSlug("已发布笔记")}/index.md`), /完好/);
 });
 
@@ -187,9 +187,9 @@ test("acceptance 7: email, phone, id, path, and key block export", () => {
   note(vault, "价值投资/邮箱.md", { body: "联系 me@example.com" });
   note(vault, "价值投资/手机.md", { body: "电话 13800138000" });
   note(vault, "初级会计/身份证.md", { body: "号码 110101199003078515" });
-  note(vault, "杂项/路径.md", { body: "见 /Users/yinming/secret" });
-  note(vault, "杂项/密钥.md", { body: "token ghp_abcdefghijklmnopqrst" });
-  note(vault, "杂项/干净.md", { body: "可以发布。" });
+  note(vault, "随手札记/路径.md", { body: "见 /Users/yinming/secret" });
+  note(vault, "随手札记/密钥.md", { body: "token ghp_abcdefghijklmnopqrst" });
+  note(vault, "随手札记/干净.md", { body: "可以发布。" });
 
   const result = syncVault({ vault, outDir: out, dryRun: false });
   for (const kind of ["邮箱", "手机号", "身份证号", "本机路径", "疑似密钥"]) {
@@ -208,7 +208,7 @@ test("sync-ignore-secrets overrides the scan and comments are stripped", () => {
   note(vault, "价值投资/放行.md", {
     body: "%%sync-ignore-secrets%%\n联系 me@example.com",
   });
-  note(vault, "杂项/注释.md", {
+  note(vault, "随手札记/注释.md", {
     body: "可见 %%hidden@example.com 和 [[未发布笔记]]%% 可见",
   });
 
@@ -217,12 +217,12 @@ test("sync-ignore-secrets overrides the scan and comments are stripped", () => {
   const allowed = readOut(out, `价值投资/${toSlug("放行")}/index.md`);
   assert.match(allowed, /me@example\.com/);
   assert.doesNotMatch(allowed, /sync-ignore-secrets/);
-  const commented = readOut(out, `杂项/${toSlug("注释")}/index.md`);
+  const commented = readOut(out, `随手札记/${toSlug("注释")}/index.md`);
   assert.match(commented, /可见\s+可见/);
   assert.doesNotMatch(commented, /hidden@example\.com/);
   assert.doesNotMatch(commented, /\/posts\//);
   assert.equal(
-    result.warnings.some(item => item.file === "杂项/注释.md"),
+    result.warnings.some(item => item.file === "随手札记/注释.md"),
     false
   );
 });
@@ -232,11 +232,11 @@ test("missing category folders are listed on dry-run and created on write", () =
   const out = path.join(tempDir(), "out");
   note(vault, "价值投资/只有一篇.md");
   const dry = syncVault({ vault, outDir: out, dryRun: true });
-  assert.deepEqual(dry.createdFolders, ["初级会计", "杂项"]);
-  assert.equal(fs.existsSync(path.join(vault, "杂项")), false);
+  assert.deepEqual(dry.createdFolders, ["初级会计", "随手札记"]);
+  assert.equal(fs.existsSync(path.join(vault, "随手札记")), false);
   assert.equal(fs.existsSync(path.join(vault, "初级会计")), false);
   const real = syncVault({ vault, outDir: out, dryRun: false });
-  assert.ok(fs.statSync(path.join(vault, "杂项")).isDirectory());
+  assert.ok(fs.statSync(path.join(vault, "随手札记")).isDirectory());
   assert.ok(fs.statSync(path.join(vault, "初级会计")).isDirectory());
   assert.equal(real.errors.length, 0);
 });
@@ -244,17 +244,17 @@ test("missing category folders are listed on dry-run and created on write", () =
 test("oversized images warn, exclusive images are removed, second sync is unchanged", () => {
   const vault = tempDir();
   const out = path.join(tempDir(), "out");
-  for (const name of ["价值投资", "初级会计", "杂项"]) fs.mkdirSync(path.join(vault, name));
+  for (const name of ["价值投资", "初级会计", "随手札记"]) fs.mkdirSync(path.join(vault, name));
   write(path.join(vault, "价值投资/附件/大图.png"), Buffer.alloc(1024 * 1024 + 1, 7));
   note(vault, "价值投资/大图笔记.md", { body: "![[大图.png]]" });
-  write(path.join(out, "杂项/附件/keep.txt"), "keep");
+  write(path.join(out, "随手札记/附件/keep.txt"), "keep");
 
   const first = syncVault({ vault, outDir: out, dryRun: false });
   assert.equal(first.errors.length, 0, JSON.stringify(first.errors));
   assert.ok(first.warnings.some(item => item.message.includes("图片超过 1MB")));
   const slug = toSlug("大图笔记");
   assert.equal(fs.statSync(path.join(out, "价值投资", slug, "da-tu.png")).size, 1024 * 1024 + 1);
-  assert.equal(fs.readFileSync(path.join(out, "杂项/附件/keep.txt"), "utf8"), "keep");
+  assert.equal(fs.readFileSync(path.join(out, "随手札记/附件/keep.txt"), "utf8"), "keep");
 
   const second = syncVault({ vault, outDir: out, dryRun: false });
   assert.deepEqual(second.posts.add, []);
@@ -267,7 +267,7 @@ test("oversized images warn, exclusive images are removed, second sync is unchan
   assert.ok(third.posts.delete.includes(`价值投资/${slug}`));
   assert.ok(third.images.delete.some(item => item.endsWith("/da-tu.png")));
   assert.equal(fs.existsSync(path.join(out, "价值投资", slug)), false);
-  assert.equal(fs.readFileSync(path.join(out, "杂项/附件/keep.txt"), "utf8"), "keep");
+  assert.equal(fs.readFileSync(path.join(out, "随手札记/附件/keep.txt"), "utf8"), "keep");
 });
 
 test("drops non-whitelisted front matter and requires date", () => {
@@ -277,21 +277,21 @@ test("drops non-whitelisted front matter and requires date", () => {
     path.join(vault, "价值投资/字段.md"),
     ["---", "publish: true", "date: 2026-04-05", "author: ming", "slug: kept-slug", "tags:", "  - 会计", "---", "", "正文。", ""].join("\n")
   );
-  note(vault, "杂项/无日期.md", { date: null, body: "没有日期。" });
+  note(vault, "随手札记/无日期.md", { date: null, body: "没有日期。" });
   const result = syncVault({ vault, outDir: out, dryRun: false });
   const text = readOut(out, "价值投资/kept-slug/index.md");
   assert.match(text, /slug: "kept-slug"/);
   assert.match(text, /date: 2026-04-05/);
   assert.match(text, /会计/);
   assert.doesNotMatch(text, /author/);
-  assert.ok(result.errors.some(item => item.file === "杂项/无日期.md" && item.message.includes("date")));
-  assert.equal(fs.existsSync(path.join(out, "杂项", toSlug("无日期"))), false);
+  assert.ok(result.errors.some(item => item.file === "随手札记/无日期.md" && item.message.includes("date")));
+  assert.equal(fs.existsSync(path.join(out, "随手札记", toSlug("无日期"))), false);
 });
 
 test("CLI dry-run and failing sync", () => {
   const vault = tempDir();
   const out = path.join(tempDir(), "out");
-  for (const name of ["价值投资", "初级会计", "杂项"]) fs.mkdirSync(path.join(vault, name));
+  for (const name of ["价值投资", "初级会计", "随手札记"]) fs.mkdirSync(path.join(vault, name));
   note(vault, "价值投资/好.md");
   const dry = spawnSync(
     process.execPath,

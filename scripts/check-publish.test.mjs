@@ -12,23 +12,23 @@ function tempDir() {
 
 test("flags posts without boolean publish true and skips 附件", () => {
   const dir = tempDir();
-  fs.mkdirSync(path.join(dir, "杂项/附件"), { recursive: true });
+  fs.mkdirSync(path.join(dir, "随手札记/附件"), { recursive: true });
   fs.mkdirSync(path.join(dir, "价值投资"), { recursive: true });
   fs.writeFileSync(
-    path.join(dir, "杂项/ok.md"),
+    path.join(dir, "随手札记/ok.md"),
     "---\npublish: true\ntitle: ok\n---\n\n正文\n"
   );
-  fs.writeFileSync(path.join(dir, "杂项/缺.md"), "---\ntitle: 缺\n---\n\n正文\n");
+  fs.writeFileSync(path.join(dir, "随手札记/缺.md"), "---\ntitle: 缺\n---\n\n正文\n");
   fs.writeFileSync(
     path.join(dir, "价值投资/字符串.md"),
     "---\npublish: \"true\"\n---\n\n正文\n"
   );
   fs.writeFileSync(
-    path.join(dir, "杂项/附件/不算文章.md"),
+    path.join(dir, "随手札记/附件/不算文章.md"),
     "---\ntitle: 附件里的文件\n---\n\n正文\n"
   );
 
-  assert.deepEqual(unpublishedPosts(dir).sort(), ["价值投资/字符串.md", "杂项/缺.md"]);
+  assert.deepEqual(unpublishedPosts(dir).sort(), ["价值投资/字符串.md", "随手札记/缺.md"]);
 });
 
 test("current site posts pass", () => {
@@ -37,14 +37,14 @@ test("current site posts pass", () => {
 
 test("CLI fails the build when publish is missing", () => {
   const dir = tempDir();
-  fs.mkdirSync(path.join(dir, "杂项"), { recursive: true });
-  fs.writeFileSync(path.join(dir, "杂项/nope.md"), "---\ntitle: nope\n---\n\n正文\n");
+  fs.mkdirSync(path.join(dir, "随手札记"), { recursive: true });
+  fs.writeFileSync(path.join(dir, "随手札记/nope.md"), "---\ntitle: nope\n---\n\n正文\n");
   const result = spawnSync(process.execPath, ["scripts/check-publish.mjs", dir], {
     encoding: "utf8",
   });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /publish: true/);
-  assert.match(result.stderr, /杂项\/nope\.md/);
+  assert.match(result.stderr, /随手札记\/nope\.md/);
 
   const ok = spawnSync(process.execPath, ["scripts/check-publish.mjs", "src/content/posts"], {
     encoding: "utf8",

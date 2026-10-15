@@ -6,7 +6,7 @@ import GithubSlugger from "github-slugger";
 import { pinyin } from "pinyin-pro";
 import slugify from "slugify";
 
-export const CATEGORY_NAMES = ["价值投资", "初级会计", "杂项"];
+export const CATEGORY_NAMES = ["价值投资", "初级会计", "随手札记"];
 export const DEFAULT_VAULT =
   "/Users/yinming/Library/CloudStorage/GoogleDrive-yinming8086@gmail.com/我的云端硬盘/Obsidian";
 export const DEFAULT_OUT = "src/content/posts";
