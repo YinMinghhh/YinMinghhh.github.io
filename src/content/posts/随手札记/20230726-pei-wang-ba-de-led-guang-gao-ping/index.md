@@ -7,6 +7,10 @@ slug: "20230726-pei-wang-ba-de-led-guang-gao-ping"
 tags:
   - "硬件"
   - "折腾"
+cover:
+  - "./4.jpg"
+  - "./3.jpg"
+  - "./1.jpg"
 ---
 
 
