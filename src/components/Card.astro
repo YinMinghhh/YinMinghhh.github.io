@@ -1,0 +1,47 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { getPostUrl } from "@/utils/getPostPaths";
+import { getCategoryByFilePath } from "@/utils/categories";
+import { toTransitionName } from "@/utils/toTransitionName";
+import Datetime from "./Datetime.astro";
+import config from "@/config";
+
+type Props = {
+  variant?: "h2" | "h3";
+} & CollectionEntry<"posts">;
+
+const { variant: Heading = "h2", id, data, filePath } = Astro.props;
+const { title, description, slug, pubDatetime, modDatetime, timezone } = data;
+const locale = Astro.currentLocale ?? config.site.lang;
+const category = getCategoryByFilePath(filePath);
+---
+
+<li class="my-6">
+  <a
+    href={getPostUrl(id, filePath, locale, slug)}
+    class:list={[
+      "text-accent inline-block text-lg font-medium",
+      "decoration-dashed underline-offset-4 hover:underline",
+      "focus-visible:no-underline focus-visible:underline-offset-0",
+    ]}
+  >
+    <Heading transition:name={toTransitionName(title)}>
+      {title}
+    </Heading>
+  </a>
+  <div class="my-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+    <Datetime {pubDatetime} {modDatetime} {timezone} />
+    {
+      category && (
+        <a
+          href={getRelativeLocaleUrl(locale, `categories/${category.slug}`)}
+          class="text-accent text-sm decoration-dashed underline-offset-4 hover:underline"
+        >
+          {category.name}
+        </a>
+      )
+    }
+  </div>
+  <p>{description}</p>
+</li>

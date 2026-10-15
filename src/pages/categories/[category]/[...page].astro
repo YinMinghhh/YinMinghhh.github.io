@@ -1,0 +1,90 @@
+---
+import type { GetStaticPathsOptions, Page } from "astro";
+import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Card from "@/components/Card.astro";
+import Footer from "@/components/Footer.astro";
+import Pagination from "@/components/Pagination.astro";
+import {
+  CATEGORIES,
+  getCategoryByFilePath,
+  getCategoryBySlug,
+} from "@/utils/categories";
+import { getSortedPosts } from "@/utils/getSortedPosts";
+import { useTranslations } from "@/i18n";
+import config from "@/config";
+
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+  const posts = getSortedPosts(await getCollection("posts"));
+
+  return CATEGORIES.flatMap(category => {
+    const categoryPosts = posts.filter(
+      post => getCategoryByFilePath(post.filePath)?.slug === category.slug
+    );
+
+    if (categoryPosts.length === 0) {
+      const page: Page<CollectionEntry<"posts">> = {
+        data: [],
+        start: 0,
+        end: 0,
+        total: 0,
+        currentPage: 1,
+        size: config.posts.perPage,
+        lastPage: 1,
+        url: {
+          current: `/categories/${category.slug}`,
+          prev: undefined,
+          next: undefined,
+          first: undefined,
+          last: undefined,
+        },
+      };
+      return [
+        {
+          params: { category: category.slug },
+          props: { page, categoryName: category.name },
+        },
+      ];
+    }
+
+    return paginate(categoryPosts, {
+      params: { category: category.slug },
+      props: { categoryName: category.name },
+      pageSize: config.posts.perPage,
+    });
+  });
+}
+
+const { page, categoryName } = Astro.props;
+const category = getCategoryBySlug(Astro.params.category ?? "");
+const locale = Astro.currentLocale ?? config.site.lang;
+const t = useTranslations(locale);
+const titleName = category?.name ?? categoryName;
+---
+
+<Layout
+  title={`${titleName} | ${config.site.title}`}
+  description={`${titleName}。${config.site.description}`}
+>
+  <Header />
+  <Breadcrumb />
+  <Main pageTitle={titleName}>
+    {
+      page.data.length > 0 ? (
+        <ul>
+          {page.data.map(entry => (
+            <Card {...entry} />
+          ))}
+        </ul>
+      ) : (
+        <p>{t.pages.emptyPosts}</p>
+      )
+    }
+  </Main>
+  <Pagination {page} />
+  <Footer noMarginTop={page.lastPage > 1} />
+</Layout>

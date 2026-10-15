@@ -1,0 +1,26 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { CATEGORIES } from "@/utils/categories";
+import { useTranslations } from "@/i18n";
+import config from "@/config";
+
+const locale = Astro.currentLocale ?? config.site.lang;
+const t = useTranslations(locale);
+---
+
+<nav aria-label={t.nav.categories} class="mb-8">
+  <ul class="flex flex-wrap gap-x-4 gap-y-2">
+    {
+      CATEGORIES.map(category => (
+        <li>
+          <a
+            href={getRelativeLocaleUrl(locale, `categories/${category.slug}`)}
+            class="text-accent decoration-dashed underline-offset-4 hover:underline"
+          >
+            {category.name}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
