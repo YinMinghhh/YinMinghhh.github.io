@@ -3,7 +3,7 @@ publish: true
 title: "配网吧的LED广告屏"
 date: 2023-07-26
 description: "20230726 配网吧的LED广告屏 网吧重新装修，老广告屏要刷新字幕，于是23号我去看了一下。 拆开泡沫后盖，发现控制卡的静电袋还没有去除 可能是为了防水防尘防短路。 经过一番折腾，我发现这个控制卡不能用串口连接。找到一个旧U盘，保存里"
-slug: 20230726-pei-wang-ba-de-led-guang-gao-ping
+slug: "20230726-pei-wang-ba-de-led-guang-gao-ping"
 tags:
   - "硬件"
   - "折腾"

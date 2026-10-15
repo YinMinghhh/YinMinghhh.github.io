@@ -136,7 +136,7 @@ function yamlQuote(value) {
 function renderPost({ title, date, updated, description, slug, tags, body }) {
   const lines = ["---", "publish: true", `title: ${yamlQuote(title)}`, `date: ${date}`];
   if (updated) lines.push(`updated: ${updated}`);
-  lines.push(`description: ${yamlQuote(description)}`, `slug: ${slug}`);
+  lines.push(`description: ${yamlQuote(description)}`, `slug: ${yamlQuote(slug)}`);
   if (tags.length) {
     lines.push("tags:");
     for (const tag of tags) lines.push(`  - ${yamlQuote(tag)}`);

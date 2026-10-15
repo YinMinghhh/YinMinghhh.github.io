@@ -3,7 +3,7 @@ publish: true
 title: "踩坑：VS Code 远程开发搞定 Codex 插件网络代理"
 date: 2026-03-03
 description: "踩坑：VS Code 远程开发搞定 Codex 插件网络代理 日期 ：2026年3月3日 标签 ： VS Code Remote SSH Proxy Codex 今天花了不少时间折腾 VS Code 远程环境下的 Codex 插件（ ope"
-slug: 20260303
+slug: "20260303"
 tags:
   - "VS Code"
   - "Remote-SSH"
