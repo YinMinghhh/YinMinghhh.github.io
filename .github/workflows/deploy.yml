@@ -38,6 +38,10 @@ jobs:
         if: github.event_name == 'pull_request'
         run: pnpm install --frozen-lockfile
 
+      - name: Test (pull request)
+        if: github.event_name == 'pull_request'
+        run: pnpm test
+
       - name: Build (pull request)
         if: github.event_name == 'pull_request'
         run: pnpm run build
@@ -48,6 +52,7 @@ jobs:
         with:
           node-version: "24"
           package-manager: pnpm@11.3.0
+          build-cmd: pnpm test && pnpm run build
 
   deploy:
     needs: build

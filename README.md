@@ -16,13 +16,23 @@
 ```bash
 pnpm install
 pnpm dev
+pnpm test
 pnpm build
 ```
 
-`pnpm sync` 是 Astro 的类型生成，不是内容同步。
+同步 Obsidian 笔记时先预览，再写入：
+
+```bash
+pnpm sync --dry-run
+pnpm sync
+```
+
+默认库路径是 `/Users/yinming/Library/CloudStorage/GoogleDrive-yinming8086@gmail.com/我的云端硬盘/Obsidian`。可用 `--vault`、环境变量 `OBSIDIAN_VAULT`，或把 `sync.config.example.json` 复制为 `sync.config.json` 后修改 `vaultPath`（该文件不入库）。`--out` 可改输出目录，默认 `src/content/posts`。
+
+只扫描 `价值投资`、`初级会计`、`杂项`。图片放在各分类的 `附件/`（Obsidian 的 `attachmentFolderPath` 为 `./附件`），笔记用 `![[x.png]]` 或 `![](附件/1.jpg)`。`附件/` 不会被当成文章。Astro 类型生成是 `pnpm astro:sync`。
 
 ## 内容
 
-文章放在 `src/content/posts/` 下的三个分类文件夹：`价值投资`、`初级会计`、`杂项`。分类由文件夹决定，front matter 不写 category。只有 `publish: true` 的文章会进入站点。URL 使用英文或拼音 `slug`。
+文章放在 `src/content/posts/` 下的三个分类文件夹：`价值投资`、`初级会计`、`杂项`。分类由文件夹决定，front matter 不写 category。只有 `publish: true` 的文章会进入站点；缺少该字段时 `pnpm build` 会失败。URL 使用英文或拼音 `slug`。
 
-当前「杂项」里的两篇是 M1 冒烟占位，非正式文章。
+当前「杂项」里的两篇是 M1 冒烟占位，非正式文章。本机第一次正式 `pnpm sync` 时，库里没有同 slug 的笔记就会删掉它们。
